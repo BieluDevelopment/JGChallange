@@ -8,5 +8,6 @@ public class MartianRobot
     public int LostAtY { get; set; }
     public bool Lost { get; set; }
     public Direction Direction { get; set; }
+    public bool Processed { get; set; }
 
 }

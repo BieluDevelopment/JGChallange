@@ -26,7 +26,7 @@ public class WorldService : IWorldService
 
     public void InsertRobot(MartianRobot robot) => _currentWorld.RobotsOnWorld.Add(robot);
 
-    public bool IsInBound(int x, int y) => (x > 0 && x <= _currentWorld.X) && (y > 0 && y <= _currentWorld.Y);
+    public bool IsInBound(int x, int y) => (x >= 0 && x <= _currentWorld.X) && (y >= 0 && y <= _currentWorld.Y);
 
     public bool IsScented(int x, int y) =>
         _currentWorld.RobotsOnWorld.Any(robot => robot.LostAtX == x && robot.LostAtY == y);

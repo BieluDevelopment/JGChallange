@@ -4,33 +4,35 @@ namespace MartianRobots.Core.Services;
 
 public interface IRobotNavigationService
 {
-    public void MoveForward(MartianRobot robot);
-    public void RotateLeft(MartianRobot robot);
-    public void RotateRight(MartianRobot robot);
+    public Task MoveForward(MartianRobot robot);
+    public Task RotateLeft(MartianRobot robot);
+    public Task RotateRight(MartianRobot robot);
 }
 
 public class RobotNavigationService(IWorldService worldService): IRobotNavigationService
 {
 
-    public void RotateLeft(MartianRobot robot)
+    public Task RotateLeft(MartianRobot robot)
     {
         if (robot == null)
         {
             throw new InvalidOperationException("no robot");
         }
         robot.Direction = (Direction)(((int)robot.Direction - 90 + 360) % 360);
+        return Task.CompletedTask;
     }
 
-    public void RotateRight(MartianRobot robot)
+    public Task RotateRight(MartianRobot robot)
     {
         if (robot == null)
         {
             throw new InvalidOperationException("no robot");
         }
         robot.Direction = (Direction)(((int)robot.Direction + 90) % 360);
+        return Task.CompletedTask;
     }
 
-    public void MoveForward(MartianRobot robot)
+    public Task MoveForward(MartianRobot robot)
     {
         var (newX, newY) = robot.Direction switch
         {
@@ -48,16 +50,17 @@ public class RobotNavigationService(IWorldService worldService): IRobotNavigatio
             if (worldService.IsScented(robot.CurrentXPosition, robot.CurrentYPosition))
             {
                 // Scent present: ignore the move.
-                return;
+                return Task.CompletedTask;
             }
 
             robot.Lost = true;
             robot.LostAtX = robot.CurrentXPosition;
             robot.LostAtY = robot.CurrentYPosition;
-            return;
+            return Task.CompletedTask;
         }
 
         robot.CurrentXPosition = newX;
         robot.CurrentYPosition = newY;
+        return Task.CompletedTask;
     }
 }

@@ -5,7 +5,7 @@ namespace MartianRobots.Core.Services;
 public interface IRobotService
 {
     public MartianRobot CreateRobot(int x, int y, Direction direction);
-    public void ParseCommands(MartianRobot robot, string commandString);
+    public Task ParseCommands(MartianRobot robot, string commandString);
 }
 
 public class RobotService(IWorldService worldService, IRobotNavigationService robotNavigationService) : IRobotService
@@ -28,7 +28,7 @@ public class RobotService(IWorldService worldService, IRobotNavigationService ro
         };
     }
 
-    public void ParseCommands(MartianRobot robot, string commandString)
+    public async Task ParseCommands(MartianRobot robot, string commandString)
     {
         if (robot is null)
         {
@@ -45,15 +45,15 @@ public class RobotService(IWorldService worldService, IRobotNavigationService ro
             switch (char.ToUpperInvariant(command))
             {
                 case 'L':
-                    robotNavigationService.RotateLeft(robot);
+                 await   robotNavigationService.RotateLeft(robot);
                     break;
 
                 case 'R':
-                    robotNavigationService.RotateRight(robot);
+                    await   robotNavigationService.RotateRight(robot);
                     break;
 
                 case 'F':
-                    robotNavigationService.MoveForward(robot);
+                    await     robotNavigationService.MoveForward(robot);
                     break;
             }
 
@@ -62,5 +62,7 @@ public class RobotService(IWorldService worldService, IRobotNavigationService ro
                 break;
             }
         }
+
+        robot.Processed = true;
     }
 }

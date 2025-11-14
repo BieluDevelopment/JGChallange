@@ -10,7 +10,7 @@ public class ConsoleController(IWorldService worldService, IRobotService service
 {
     private MartianRobot? _currentRobot;
 
-    public Task ExecuteAsync()
+    public async Task ExecuteAsync()
     {
         var shouldStop = false;
         while (!shouldStop)
@@ -40,10 +40,9 @@ public class ConsoleController(IWorldService worldService, IRobotService service
                 continue;
             }
 
-            HandleRobotCommands(readLine);
+            await HandleRobotCommands(readLine);
         }
 
-        return Task.CompletedTask;
     }
 
     private int[] GetWorldCoordFromInput(string readLine)
@@ -74,10 +73,7 @@ public class ConsoleController(IWorldService worldService, IRobotService service
     private int[] GetRobotCoordFromInput(IEnumerable<string> readLine)
     {
         var coord = readLine.Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray();
-        if (coord.Length > 3)
-        {
-            console.WriteLine("Unexpected Input, please insert Mars bound coordinates with direction i.e. 1 5 E");
-        }
+
 
         if (coord[0] > 50 || coord[1] > 50)
         {
@@ -87,7 +83,7 @@ public class ConsoleController(IWorldService worldService, IRobotService service
         return coord;
     }
 
-    private void HandleRobotCommands(string readLine)
+    private async Task HandleRobotCommands(string readLine)
     {
         if (_currentRobot == null)
         {
@@ -117,11 +113,20 @@ public class ConsoleController(IWorldService worldService, IRobotService service
         if (readLine.Length > 100)
         {
             console.WriteLine("Incorrect input, robots support up to 100 commands");
+            return;
         }
 
-        service.ParseCommands(_currentRobot, readLine);
+        await service.ParseCommands(_currentRobot, readLine);
+
+        if (!_currentRobot.Processed)
+        {
+            return;
+        }
+
         console.WriteLine(
             $"{_currentRobot.CurrentXPosition} {_currentRobot.CurrentYPosition} {_currentRobot.Direction.ToString()}{(_currentRobot.Lost ? " LOST" : "")}");
+        _currentRobot = null;
+
     }
 
     public async Task StartAsync(CancellationToken cancellationToken) => await ExecuteAsync();

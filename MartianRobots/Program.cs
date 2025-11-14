@@ -10,6 +10,9 @@ var host = Host.CreateDefaultBuilder(args)
     {
         services.AddTransient<ConsoleController>();
         services.AddTransient<IConsoleProvider, ConsoleProvider>();
+        services.AddTransient<IWorldService, WorldService>();
+        services.AddTransient<IRobotService, RobotService>();
+        services.AddTransient<IRobotNavigationService, RobotNavigationService>();
     })
     .Build();
 

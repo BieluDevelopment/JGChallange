@@ -1,10 +1,12 @@
 ﻿using System.Globalization;
 using System.Reflection.Metadata.Ecma335;
 using MartianRobots.Core.Models;
+using Microsoft.Extensions.Hosting;
 
 namespace MartianRobots.Core.Services;
 
 public class ConsoleController(IWorldService worldService, IRobotService service, IConsoleProvider console)
+    : IHostedService
 {
     private MartianRobot? _currentRobot;
 
@@ -104,4 +106,8 @@ public class ConsoleController(IWorldService worldService, IRobotService service
         console.WriteLine(
             $"{_currentRobot.CurrentXPosition} {_currentRobot.CurrentYPosition} {_currentRobot.Direction.ToString()}{(_currentRobot.Lost ? " LOST" : "")}");
     }
+
+    public async Task StartAsync(CancellationToken cancellationToken) => await ExecuteAsync();
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

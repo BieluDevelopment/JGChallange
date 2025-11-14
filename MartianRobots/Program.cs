@@ -8,13 +8,11 @@ using Microsoft.Extensions.Hosting; // Requires NuGet package
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
-        services.AddTransient<ConsoleController>();
         services.AddTransient<IConsoleProvider, ConsoleProvider>();
         services.AddTransient<IWorldService, WorldService>();
         services.AddTransient<IRobotService, RobotService>();
         services.AddTransient<IRobotNavigationService, RobotNavigationService>();
+        services.AddHostedService<ConsoleController>();
     })
-    .Build();
+    .RunConsoleAsync();
 
-var appController = host.Services.GetRequiredService<ConsoleController>();
-await appController.ExecuteAsync();

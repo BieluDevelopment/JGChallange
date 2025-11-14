@@ -7,6 +7,7 @@ namespace MartianRobots.Core.Services;
 public class ConsoleController(IWorldService worldService, IRobotService service, IConsoleProvider console)
 {
     private MartianRobot? _currentRobot;
+
     public Task ExecuteAsync()
     {
         bool shouldStop = false;
@@ -17,6 +18,7 @@ public class ConsoleController(IWorldService worldService, IRobotService service
             {
                 continue;
             }
+
             if (readLine.Equals("end", StringComparison.OrdinalIgnoreCase))
             {
                 Console.WriteLine("Closing Simulation.");
@@ -34,8 +36,6 @@ public class ConsoleController(IWorldService worldService, IRobotService service
             }
 
             HandleRobotCommands(readLine);
-
-
         }
 
         return Task.CompletedTask;
@@ -56,6 +56,7 @@ public class ConsoleController(IWorldService worldService, IRobotService service
 
         return coord;
     }
+
     private int[] GetRobotCoordFromInput(string readLine)
     {
         var coord = readLine.Split(",").Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray();
@@ -83,10 +84,11 @@ public class ConsoleController(IWorldService worldService, IRobotService service
                 return;
             }
 
-            if (!Enum.TryParse(typeof(Direction), coord[2].ToString(CultureInfo.InvariantCulture), out var direction))
+            if (!Enum.TryParse<Direction>(coord[2].ToString(CultureInfo.InvariantCulture), out var direction))
             {
                 console.WriteLine("Incorrect direction, currently supported directions :  N E S W");
             }
+
             var robot = service.CreateRobot(coord[0], coord[1], direction);
             _currentRobot = robot;
             worldService.InsertRobot(robot);
@@ -95,10 +97,11 @@ public class ConsoleController(IWorldService worldService, IRobotService service
 
         if (readLine.Length > 100)
         {
-            console.WriteLine("Inccorect input, robots support up to 100 commands");
+            console.WriteLine("Incorrect input, robots support up to 100 commands");
         }
-        service.ParseCommands(readLine);
-            console.WriteLine($"{_currentRobot.CurrentXPosition} {_currentRobot.CurrentYPosition} {_currentRobot.Direction.ToString()}{(_currentRobot.Lost ? " LOST" : "")}");
 
+        service.ParseCommands(_currentRobot, readLine);
+        console.WriteLine(
+            $"{_currentRobot.CurrentXPosition} {_currentRobot.CurrentYPosition} {_currentRobot.Direction.ToString()}{(_currentRobot.Lost ? " LOST" : "")}");
     }
 }

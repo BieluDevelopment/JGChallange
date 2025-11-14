@@ -1,6 +1,7 @@
 ﻿using AwesomeAssertions;
 using MartianRobots.Core.Models;
 using MartianRobots.Core.Services;
+using MartianRobots.Tests.TestHelpers;
 using NSubstitute;
 
 namespace MartianRobots.Tests;
@@ -80,67 +81,4 @@ public class ConsoleControllerIntegrationTests
 
         return robotService;
     }
-}
-
-/// <summary>
-/// Console provider that reads from a list of strings.
-/// </summary>
-public class StringListConsoleProvider : IConsoleProvider
-{
-    private readonly IEnumerator<string> _lines;
-
-    public StringListConsoleProvider(string[] lines)
-    {
-        _lines = ((IEnumerable<string>)lines).GetEnumerator();
-    }
-
-    public string? ReadLine()
-    {
-        return _lines.MoveNext() ? _lines.Current : null;
-    }
-
-    public void WriteLine(string? message)
-    {
-        // Ignored in this provider (use CompositeConsoleProvider to capture output).
-    }
-}
-
-/// <summary>
-/// Console provider that captures output to a StringBuilder.
-/// </summary>
-public class StringBuilderConsoleProvider : IConsoleProvider
-{
-    private readonly System.Text.StringBuilder _output = new();
-
-    public string? ReadLine()
-    {
-        // This provider only writes, doesn't read.
-        return null;
-    }
-
-    public void WriteLine(string? message)
-    {
-        _output.AppendLine(message);
-    }
-
-    public string GetOutput() => _output.ToString();
-}
-
-/// <summary>
-/// Composite provider that reads from one and writes to another.
-/// </summary>
-public class CompositeConsoleProvider : IConsoleProvider
-{
-    private readonly IConsoleProvider _reader;
-    private readonly IConsoleProvider _writer;
-
-    public CompositeConsoleProvider(IConsoleProvider reader, IConsoleProvider writer)
-    {
-        _reader = reader;
-        _writer = writer;
-    }
-
-    public string? ReadLine() => _reader.ReadLine();
-
-    public void WriteLine(string? message) => _writer.WriteLine(message);
 }

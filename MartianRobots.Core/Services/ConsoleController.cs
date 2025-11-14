@@ -12,8 +12,8 @@ public class ConsoleController(IWorldService worldService, IRobotService service
 
     public Task ExecuteAsync()
     {
-        bool shouldStop = false;
-        while (shouldStop)
+        var shouldStop = false;
+        while (!shouldStop)
         {
             var readLine = console.ReadLine();
             if (string.IsNullOrWhiteSpace(readLine))
@@ -23,7 +23,7 @@ public class ConsoleController(IWorldService worldService, IRobotService service
 
             if (readLine.Equals("end", StringComparison.OrdinalIgnoreCase))
             {
-                Console.WriteLine("Closing Simulation.");
+                console.WriteLine("Closing Simulation.");
 
                 shouldStop = true;
                 continue;
@@ -32,8 +32,11 @@ public class ConsoleController(IWorldService worldService, IRobotService service
             if (!worldService.IsBoundSetUp())
             {
                 var coord = GetWorldCoordFromInput(readLine);
+                if (coord.Length != 0)
+                {
+                    worldService.SetBounds(coord[0], coord[1]);
 
-                worldService.SetBounds(coord[0], coord[1]);
+                }
                 continue;
             }
 
@@ -45,23 +48,32 @@ public class ConsoleController(IWorldService worldService, IRobotService service
 
     private int[] GetWorldCoordFromInput(string readLine)
     {
-        var coord = readLine.Split(" ").Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray();
-        if (coord.Length > 2)
+        try
+        {
+            var coord = readLine.Split(" ").Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray();
+            if (coord.Length > 2)
+            {
+                console.WriteLine("Unexpected Input, please insert Mars bound coordinates i.e. 1 5");
+            }
+
+            if (coord[0] > 50 || coord[1] > 50)
+            {
+                console.WriteLine("Incorrect Input, all coordinates have to be up to 50");
+            }
+
+            return coord;
+        }
+        catch (Exception e)
         {
             console.WriteLine("Unexpected Input, please insert Mars bound coordinates i.e. 1 5");
         }
 
-        if (coord[0] > 50 || coord[1] > 50)
-        {
-            console.WriteLine("Incorrect Input, all coordinates have to be up to 50");
-        }
-
-        return coord;
+        return [];
     }
 
-    private int[] GetRobotCoordFromInput(string readLine)
+    private int[] GetRobotCoordFromInput(IEnumerable<string> readLine)
     {
-        var coord = readLine.Split(",").Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray();
+        var coord = readLine.Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray();
         if (coord.Length > 3)
         {
             console.WriteLine("Unexpected Input, please insert Mars bound coordinates with direction i.e. 1 5 E");
@@ -79,14 +91,19 @@ public class ConsoleController(IWorldService worldService, IRobotService service
     {
         if (_currentRobot == null)
         {
-            var coord = GetRobotCoordFromInput(readLine);
+            var input = readLine.Split(" ");
+            if (input.Length > 3)
+            {
+                console.WriteLine("Unexpected Input, please insert Mars bound coordinates with direction i.e. 1 5 E");
+            }
+            var coord = GetRobotCoordFromInput(input.Take(2));
             if (!worldService.IsInBound(coord[0], coord[1]))
             {
                 console.WriteLine("Robot placed outside of boundary");
                 return;
             }
 
-            if (!Enum.TryParse<Direction>(coord[2].ToString(CultureInfo.InvariantCulture), out var direction))
+            if (!Enum.TryParse<Direction>(input[2].ToString(CultureInfo.InvariantCulture), out var direction))
             {
                 console.WriteLine("Incorrect direction, currently supported directions :  N E S W");
             }

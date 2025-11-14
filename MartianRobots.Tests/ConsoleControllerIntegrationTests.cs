@@ -43,6 +43,32 @@ public class ConsoleControllerIntegrationTests
         output.Should().Contain("2 3 S");
         output.Should().Contain("Closing Simulation.");
     }
+    [Fact]
+    public async Task ExecuteAsyncProcessesCanHandleIncorrectInputForWorldBound()
+    {
+        // Arrange
+        var sampleInput = new[]
+        {
+            "TEST",
+            "end"
+        };
+
+        var inputReader = new StringListConsoleProvider(sampleInput);
+        var outputWriter = new StringBuilderConsoleProvider();
+
+        var worldService = new WorldService();
+        var robotService = CreateMockRobotService();
+
+        var controller = new ConsoleController(worldService, robotService, new CompositeConsoleProvider(inputReader, outputWriter));
+
+        // Act
+        await controller.ExecuteAsync();
+
+        // Assert
+        var output = outputWriter.GetOutput();
+        output.Should().Contain("Unexpected Input, please insert Mars bound coordinates i.e. 1 5");
+        output.Should().Contain("Closing Simulation.");
+    }
 
     private static IRobotService CreateMockRobotService()
     {
@@ -81,4 +107,5 @@ public class ConsoleControllerIntegrationTests
 
         return robotService;
     }
+
 }

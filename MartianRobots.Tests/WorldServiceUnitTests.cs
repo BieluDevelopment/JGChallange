@@ -107,7 +107,7 @@ public class WorldServiceUnitTests
         worldService.SetBounds(5, 3);
 
         // Act
-        var atOrigin = worldService.IsInBound(0, 0);
+        var atOrigin = worldService.IsInBound(-1, 0);
 
         // Assert
         atOrigin.Should().BeFalse();

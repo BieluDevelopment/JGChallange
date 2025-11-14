@@ -28,7 +28,8 @@ public class ConsoleControllerIntegrationTests
         var outputWriter = new StringBuilderConsoleProvider();
 
         var worldService = new WorldService();
-        var robotService = CreateMockRobotService();
+        var robotNavigationService = new RobotNavigationService(worldService);
+        var robotService = new RobotService(worldService,robotNavigationService);
 
         var controller = new ConsoleController(worldService, robotService, new CompositeConsoleProvider(inputReader, outputWriter));
 
@@ -57,7 +58,8 @@ public class ConsoleControllerIntegrationTests
         var outputWriter = new StringBuilderConsoleProvider();
 
         var worldService = new WorldService();
-        var robotService = CreateMockRobotService();
+        var robotNavigationService = new RobotNavigationService(worldService);
+        var robotService = new RobotService(worldService,robotNavigationService);
 
         var controller = new ConsoleController(worldService, robotService, new CompositeConsoleProvider(inputReader, outputWriter));
 

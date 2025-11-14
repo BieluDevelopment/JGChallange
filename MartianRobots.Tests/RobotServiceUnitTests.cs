@@ -9,7 +9,8 @@ public class RobotServiceUnitTests
 {
     private static IWorldService CreateMockWorldService() => Substitute.For<IWorldService>();
 
-    private static IRobotNavigationService CreateMockRobotNavigationService() => Substitute.For<IRobotNavigationService>();
+    private static IRobotNavigationService CreateMockRobotNavigationService() =>
+        Substitute.For<IRobotNavigationService>();
 
     private static RobotService CreateRobotService(
         IWorldService? worldService = null,
@@ -97,21 +98,20 @@ public class RobotServiceUnitTests
     }
 
     [Fact]
-    public void ParseCommandsThrowsWhenRobotIsNull()
+    public async Task ParseCommandsThrowsWhenRobotIsNull()
     {
         // Arrange
         var robotService = CreateRobotService();
 
-        // Act
+        // Act & Assert
         var act = () => robotService.ParseCommands(null!, "LRF");
 
-        // Assert
-        act.Should().Throw<InvalidOperationException>()
+        await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*No current robot set*");
     }
 
     [Fact]
-    public void ParseCommandsDoesNotProcessWhenRobotIsLost()
+    public async Task ParseCommandsDoesNotProcessWhenRobotIsLost()
     {
         // Arrange
         var navigationService = CreateMockRobotNavigationService();
@@ -120,16 +120,16 @@ public class RobotServiceUnitTests
         var lostRobot = CreateRobot(lost: true);
 
         // Act
-        robotService.ParseCommands(lostRobot, "LRF");
+        await robotService.ParseCommands(lostRobot, "LRF");
 
         // Assert
-        navigationService.DidNotReceive().RotateLeft(Arg.Any<MartianRobot>());
-        navigationService.DidNotReceive().RotateRight(Arg.Any<MartianRobot>());
-        navigationService.DidNotReceive().MoveForward(Arg.Any<MartianRobot>());
+        await navigationService.DidNotReceive().RotateLeft(Arg.Any<MartianRobot>());
+        await navigationService.DidNotReceive().RotateRight(Arg.Any<MartianRobot>());
+        await navigationService.DidNotReceive().MoveForward(Arg.Any<MartianRobot>());
     }
 
     [Fact]
-    public void ParseCommandsExecutesLeftCommand()
+    public async Task ParseCommandsExecutesLeftCommand()
     {
         // Arrange
         var navigationService = CreateMockRobotNavigationService();
@@ -138,14 +138,14 @@ public class RobotServiceUnitTests
         var robot = CreateRobot();
 
         // Act
-        robotService.ParseCommands(robot, "L");
+        await robotService.ParseCommands(robot, "L");
 
         // Assert
-        navigationService.Received(1).RotateLeft(robot);
+        await navigationService.Received(1).RotateLeft(robot);
     }
 
     [Fact]
-    public void ParseCommandsExecutesRightCommand()
+    public async Task ParseCommandsExecutesRightCommand()
     {
         // Arrange
         var navigationService = CreateMockRobotNavigationService();
@@ -154,14 +154,14 @@ public class RobotServiceUnitTests
         var robot = CreateRobot();
 
         // Act
-        robotService.ParseCommands(robot, "R");
+        await  robotService.ParseCommands(robot, "R");
 
         // Assert
-        navigationService.Received(1).RotateRight(robot);
+        await   navigationService.Received(1).RotateRight(robot);
     }
 
     [Fact]
-    public void ParseCommandsExecutesForwardCommand()
+    public async Task ParseCommandsExecutesForwardCommand()
     {
         // Arrange
         var navigationService = CreateMockRobotNavigationService();
@@ -170,14 +170,14 @@ public class RobotServiceUnitTests
         var robot = CreateRobot();
 
         // Act
-        robotService.ParseCommands(robot, "F");
+        await   robotService.ParseCommands(robot, "F");
 
         // Assert
-        navigationService.Received(1).MoveForward(robot);
+        await navigationService.Received(1).MoveForward(robot);
     }
 
     [Fact]
-    public void ParseCommandsExecutesMultipleCommands()
+    public async Task ParseCommandsExecutesMultipleCommands()
     {
         // Arrange
         var navigationService = CreateMockRobotNavigationService();
@@ -186,15 +186,15 @@ public class RobotServiceUnitTests
         var robot = CreateRobot();
 
         // Act
-        robotService.ParseCommands(robot, "RFRFRFRF");
+        await   robotService.ParseCommands(robot, "RFRFRFRF");
 
         // Assert
-        navigationService.Received(4).RotateRight(robot);
-        navigationService.Received(4).MoveForward(robot);
+        await   navigationService.Received(4).RotateRight(robot);
+        await   navigationService.Received(4).MoveForward(robot);
     }
 
     [Fact]
-    public void ParseCommandsIgnoresCaseInCommands()
+    public async Task ParseCommandsIgnoresCaseInCommands()
     {
         // Arrange
         var navigationService = CreateMockRobotNavigationService();
@@ -203,16 +203,16 @@ public class RobotServiceUnitTests
         var robot = CreateRobot();
 
         // Act
-        robotService.ParseCommands(robot, "lRf");
+        await   robotService.ParseCommands(robot, "lRf");
 
         // Assert
-        navigationService.Received(1).RotateLeft(robot);
-        navigationService.Received(1).RotateRight(robot);
-        navigationService.Received(1).MoveForward(robot);
+        await  navigationService.Received(1).RotateLeft(robot);
+        await   navigationService.Received(1).RotateRight(robot);
+        await  navigationService.Received(1).MoveForward(robot);
     }
 
     [Fact]
-    public void ParseCommandsStopsWhenRobotBecomesLost()
+    public async Task ParseCommandsStopsWhenRobotBecomesLost()
     {
         // Arrange
         var navigationService = CreateMockRobotNavigationService();
@@ -224,15 +224,15 @@ public class RobotServiceUnitTests
             .Do(_ => robot.Lost = true);
 
         // Act
-        robotService.ParseCommands(robot, "FRRFLLFFRRFLL");
+        await    robotService.ParseCommands(robot, "FRRFLLFFRRFLL");
 
         // Assert
-        navigationService.Received(1).MoveForward(robot);
-        navigationService.DidNotReceive().RotateRight(Arg.Any<MartianRobot>());
+        await   navigationService.Received(1).MoveForward(robot);
+        await  navigationService.DidNotReceive().RotateRight(Arg.Any<MartianRobot>());
     }
 
     [Fact]
-    public void ParseCommandsProcessesEmptyCommandString()
+    public async Task ParseCommandsProcessesEmptyCommandString()
     {
         // Arrange
         var navigationService = CreateMockRobotNavigationService();
@@ -241,16 +241,16 @@ public class RobotServiceUnitTests
         var robot = CreateRobot();
 
         // Act
-        robotService.ParseCommands(robot, "");
+        await   robotService.ParseCommands(robot, "");
 
         // Assert
-        navigationService.DidNotReceive().RotateLeft(Arg.Any<MartianRobot>());
-        navigationService.DidNotReceive().RotateRight(Arg.Any<MartianRobot>());
-        navigationService.DidNotReceive().MoveForward(Arg.Any<MartianRobot>());
+        await    navigationService.DidNotReceive().RotateLeft(Arg.Any<MartianRobot>());
+        await   navigationService.DidNotReceive().RotateRight(Arg.Any<MartianRobot>());
+        await    navigationService.DidNotReceive().MoveForward(Arg.Any<MartianRobot>());
     }
 
     [Fact]
-    public void ParseCommandsIgnoresInvalidCommands()
+    public async Task ParseCommandsIgnoresInvalidCommands()
     {
         // Arrange
         var navigationService = CreateMockRobotNavigationService();
@@ -259,15 +259,15 @@ public class RobotServiceUnitTests
         var robot = CreateRobot();
 
         // Act
-        robotService.ParseCommands(robot, "LXF");
+        await robotService.ParseCommands(robot, "LXF");
 
         // Assert
-        navigationService.Received(1).RotateLeft(robot);
-        navigationService.Received(1).MoveForward(robot);
+        await navigationService.Received(1).RotateLeft(robot);
+        await navigationService.Received(1).MoveForward(robot);
     }
 
     [Fact]
-    public void ParseCommandsProcessesComplexSequence()
+    public async Task ParseCommandsProcessesComplexSequence()
     {
         // Arrange
         var navigationService = CreateMockRobotNavigationService();
@@ -277,12 +277,14 @@ public class RobotServiceUnitTests
         var robot2 = CreateRobot(x: 3, y: 2, direction: Direction.N);
 
         // Act
-        robotService.ParseCommands(robot1, "RFRFRFRF");
-        robotService.ParseCommands(robot2, "FRRFLLFFRRFLL");
+        await robotService.ParseCommands(robot1, "RFRFRFRF");
+        await robotService.ParseCommands(robot2, "FRRFLLFFRRFLL");
 
         // Assert
-        navigationService.Received(2).RotateRight(Arg.Any<MartianRobot>());
-        navigationService.Received(8).MoveForward(Arg.Any<MartianRobot>());
+        await navigationService.Received(9).MoveForward(Arg.Any<MartianRobot>());
+
+        await navigationService.Received(8).RotateRight(Arg.Any<MartianRobot>());
+        await navigationService.Received(4).RotateLeft(Arg.Any<MartianRobot>());
     }
 
     [Fact]
@@ -307,7 +309,7 @@ public class RobotServiceUnitTests
     }
 
     [Fact]
-    public void ParseCommandsWithMixedValidAndInvalidCommands()
+    public async Task ParseCommandsWithMixedValidAndInvalidCommands()
     {
         // Arrange
         var navigationService = CreateMockRobotNavigationService();
@@ -316,10 +318,10 @@ public class RobotServiceUnitTests
         var robot = CreateRobot();
 
         // Act
-        robotService.ParseCommands(robot, "LXRYFZL");
+        await  robotService.ParseCommands(robot, "LXRYFZL");
 
         // Assert
-        navigationService.Received(2).RotateLeft(robot);
-        navigationService.Received(1).RotateRight(robot);
+        await  navigationService.Received(2).RotateLeft(robot);
+        await  navigationService.Received(1).RotateRight(robot);
     }
 }

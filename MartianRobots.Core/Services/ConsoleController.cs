@@ -13,6 +13,10 @@ public class ConsoleController(IWorldService worldService, IRobotService service
         while (shouldStop)
         {
             var readLine = console.ReadLine();
+            if (string.IsNullOrWhiteSpace(readLine))
+            {
+                continue;
+            }
             if (readLine.Equals("end", StringComparison.OrdinalIgnoreCase))
             {
                 Console.WriteLine("Closing Simulation.");

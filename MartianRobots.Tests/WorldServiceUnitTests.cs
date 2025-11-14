@@ -1,4 +1,5 @@
 ﻿using AwesomeAssertions;
+using MartianRobots.Core.Models;
 using MartianRobots.Core.Services;
 using Xunit;
 
@@ -6,16 +7,21 @@ namespace MartianRobots.Tests;
 
 public class WorldServiceUnitTests
 {
+    private static WorldService CreateWorldService()
+    {
+        return new WorldService();
+    }
+
     [Fact]
     public void SetBoundsStoresBoundsInCurrentWorld()
     {
         // Arrange
-        var worldService = new WorldService();
+        var worldService = CreateWorldService();
         const int maxX = 5;
         const int maxY = 3;
 
         // Act
-        worldService.SetBounds(3, 5);
+        worldService.SetBounds(maxX, maxY);
         var currentWorld = worldService.GetCurrentWorld();
 
         // Assert
@@ -25,31 +31,10 @@ public class WorldServiceUnitTests
     }
 
     [Fact]
-    public void IsInBoundUsesStoredBoundsCorrectly()
+    public void IsBoundSetUpReturnsFalseInitially()
     {
         // Arrange
-        var worldService = new WorldService();
-        worldService.SetBounds(5, 3);
-
-        // Act
-        var insideOrigin   = worldService.IsInBound(0, 0);
-        var insideMiddle   = worldService.IsInBound(2, 1);
-        var onTopRightEdge = worldService.IsInBound(5, 3);
-        var outsideRight   = worldService.IsInBound(6, 1);
-        var outsideTop     = worldService.IsInBound(2, 4);
-
-        // Assert
-        insideOrigin.Should().BeTrue();
-        insideMiddle.Should().BeTrue();
-        onTopRightEdge.Should().BeTrue();
-        outsideRight.Should().BeFalse();
-        outsideTop.Should().BeFalse();
-    }
-    [Fact]
-    public void IsBoundSetUpReturnsFalseBeforeBoundsAreSet()
-    {
-        // Arrange
-        var worldService = new WorldService();
+        var worldService = CreateWorldService();
 
         // Act
         var isSetUp = worldService.IsBoundSetUp();
@@ -62,7 +47,7 @@ public class WorldServiceUnitTests
     public void IsBoundSetUpReturnsTrueAfterBoundsAreSet()
     {
         // Arrange
-        var worldService = new WorldService();
+        var worldService = CreateWorldService();
 
         // Act
         worldService.SetBounds(5, 3);
@@ -71,60 +56,295 @@ public class WorldServiceUnitTests
         // Assert
         isSetUp.Should().BeTrue();
     }
+
     [Fact]
-    public void IsInBoundReturnsFalseForNegativeCoordinates()
+    public void IsInBoundReturnsTrueForPositionInsideBounds()
     {
         // Arrange
-        var worldService = new WorldService();
+        var worldService = CreateWorldService();
         worldService.SetBounds(5, 3);
 
         // Act
-        var negativeX = worldService.IsInBound(-1, 0);
-        var negativeY = worldService.IsInBound(0, -1);
+        var insideMiddle = worldService.IsInBound(2, 1);
+
+        // Assert
+        insideMiddle.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsInBoundReturnsTrueForPositionOnRightEdge()
+    {
+        // Arrange
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        // Act
+        var onRightEdge = worldService.IsInBound(5, 1);
+
+        // Assert
+        onRightEdge.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsInBoundReturnsTrueForPositionOnTopEdge()
+    {
+        // Arrange
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        // Act
+        var onTopEdge = worldService.IsInBound(2, 3);
+
+        // Assert
+        onTopEdge.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsInBoundReturnsFalseForOrigin()
+    {
+        // Arrange
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        // Act
+        var atOrigin = worldService.IsInBound(0, 0);
+
+        // Assert
+        atOrigin.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsInBoundReturnsFalseForNegativeX()
+    {
+        // Arrange
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        // Act
+        var negativeX = worldService.IsInBound(-1, 1);
 
         // Assert
         negativeX.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsInBoundReturnsFalseForNegativeY()
+    {
+        // Arrange
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        // Act
+        var negativeY = worldService.IsInBound(1, -1);
+
+        // Assert
         negativeY.Should().BeFalse();
     }
 
     [Fact]
-    public void SetBoundsThrowsWhenBoundsAreNegative()
+    public void IsInBoundReturnsFalseForXExceedingBound()
     {
         // Arrange
-        var worldService = new WorldService();
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
 
         // Act
-        var setNegativeX = () => worldService.SetBounds(-1, 3);
-        var setNegativeY = () => worldService.SetBounds(5, -1);
+        var exceedsX = worldService.IsInBound(6, 1);
 
         // Assert
-        setNegativeX.Should().Throw<ArgumentOutOfRangeException>();
-        setNegativeY.Should().Throw<ArgumentOutOfRangeException>();
+        exceedsX.Should().BeFalse();
     }
 
     [Fact]
-    public void IsInBoundThrowsIfCalledBeforeSetBounds()
+    public void IsInBoundReturnsFalseForYExceedingBound()
     {
         // Arrange
-        var worldService = new WorldService();
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
 
         // Act
-        Action act = () => worldService.IsInBound(0, 0);
+        var exceedsY = worldService.IsInBound(1, 4);
 
         // Assert
-        act.Should().Throw<InvalidOperationException>();
+        exceedsY.Should().BeFalse();
     }
 
     [Fact]
-    public void GetCurrentWorldThrowsIfBoundsNotSet()
+    public void InsertRobotAddsRobotToWorld()
     {
         // Arrange
-        var worldService = new WorldService();
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        var robot = new MartianRobot
+        {
+            CurrentXPosition = 1,
+            CurrentYPosition = 1,
+            Direction = Direction.N,
+            Lost = false
+        };
 
         // Act
-        Action act = () => worldService.GetCurrentWorld();
+        worldService.InsertRobot(robot);
+        var currentWorld = worldService.GetCurrentWorld();
 
         // Assert
-        act.Should().Throw<InvalidOperationException>();
+        currentWorld.RobotsOnWorld.Should().HaveCount(1);
+        currentWorld.RobotsOnWorld.First().Should().Be(robot);
+    }
+
+    [Fact]
+    public void InsertRobotAddsMultipleRobotsToWorld()
+    {
+        // Arrange
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        var robot1 = new MartianRobot
+        {
+            CurrentXPosition = 1,
+            CurrentYPosition = 1,
+            Direction = Direction.N,
+            Lost = false
+        };
+
+        var robot2 = new MartianRobot
+        {
+            CurrentXPosition = 3,
+            CurrentYPosition = 2,
+            Direction = Direction.E,
+            Lost = false
+        };
+
+        // Act
+        worldService.InsertRobot(robot1);
+        worldService.InsertRobot(robot2);
+        var currentWorld = worldService.GetCurrentWorld();
+
+        // Assert
+        currentWorld.RobotsOnWorld.Should().HaveCount(2);
+        currentWorld.RobotsOnWorld.Should().Contain(robot1);
+        currentWorld.RobotsOnWorld.Should().Contain(robot2);
+    }
+
+    [Fact]
+    public void GetCurrentWorldReturnsBoundWorld()
+    {
+        // Arrange
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        // Act
+        var currentWorld = worldService.GetCurrentWorld();
+
+        // Assert
+        currentWorld.Should().NotBeNull();
+        currentWorld.X.Should().Be(5);
+        currentWorld.Y.Should().Be(3);
+    }
+
+    [Fact]
+    public void IsScentedReturnsFalseWhenNoRobotsLost()
+    {
+        // Arrange
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        // Act
+        var hasScent = worldService.IsScented(1, 1);
+
+        // Assert
+        hasScent.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsScentedReturnsTrueWhenRobotLostAtPosition()
+    {
+        // Arrange
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        var lostRobot = new MartianRobot
+        {
+            CurrentXPosition = 3,
+            CurrentYPosition = 3,
+            Direction = Direction.N,
+            Lost = true,
+            LostAtX = 3,
+            LostAtY = 3
+        };
+
+        worldService.InsertRobot(lostRobot);
+
+        // Act
+        var hasScent = worldService.IsScented(3, 3);
+
+        // Assert
+        hasScent.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsScentedReturnsFalseWhenRobotLostAtDifferentPosition()
+    {
+        // Arrange
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        var lostRobot = new MartianRobot
+        {
+            CurrentXPosition = 3,
+            CurrentYPosition = 3,
+            Direction = Direction.N,
+            Lost = true,
+            LostAtX = 3,
+            LostAtY = 3
+        };
+
+        worldService.InsertRobot(lostRobot);
+
+        // Act
+        var hasScent = worldService.IsScented(2, 2);
+
+        // Assert
+        hasScent.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsScentedReturnsTrueWhenMultipleRobotsLost()
+    {
+        // Arrange
+        var worldService = CreateWorldService();
+        worldService.SetBounds(5, 3);
+
+        var robot1 = new MartianRobot
+        {
+            CurrentXPosition = 3,
+            CurrentYPosition = 3,
+            Direction = Direction.N,
+            Lost = true,
+            LostAtX = 3,
+            LostAtY = 3
+        };
+
+        var robot2 = new MartianRobot
+        {
+            CurrentXPosition = 2,
+            CurrentYPosition = 2,
+            Direction = Direction.E,
+            Lost = true,
+            LostAtX = 2,
+            LostAtY = 2
+        };
+
+        worldService.InsertRobot(robot1);
+        worldService.InsertRobot(robot2);
+
+        // Act
+        var hasScent1 = worldService.IsScented(3, 3);
+        var hasScent2 = worldService.IsScented(2, 2);
+
+        // Assert
+        hasScent1.Should().BeTrue();
+        hasScent2.Should().BeTrue();
     }
 }

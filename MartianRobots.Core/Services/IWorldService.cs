@@ -15,15 +15,22 @@ public interface IWorldService
 
 public class WorldService : IWorldService
 {
-    public void SetBounds(int x,int y) => throw new NotImplementedException();
-    public bool IsBoundSetUp() => throw new NotImplementedException();
+    private readonly BoundWorld _currentWorld = new();
 
-    public void InsertRobot(MartianRobot robot) => throw new NotImplementedException();
+    public void SetBounds(int x, int y)
+    {
+        _currentWorld.X = x;
+        _currentWorld.Y = y;
+    }
+    public bool IsBoundSetUp() => _currentWorld is { X: > -1, Y: > -1 };
 
-    public bool IsInBound(int x, int y) => throw new NotImplementedException();
+    public void InsertRobot(MartianRobot robot) => _currentWorld.RobotsOnWorld.Add(robot);
 
-    public bool IsScented(int x, int y) => throw new NotImplementedException();
+    public bool IsInBound(int x, int y) => (x > 0 && x <= _currentWorld.X) && (y > 0 && y <= _currentWorld.Y);
 
-    public bool IsInBound() => throw new NotImplementedException();
-    public BoundWorld GetCurrentWorld() => throw new NotImplementedException();
+    public bool IsScented(int x, int y) =>
+        _currentWorld.RobotsOnWorld.Any(robot => robot.LostAtX == x && robot.LostAtY == y);
+
+
+    public BoundWorld GetCurrentWorld() =>  _currentWorld;
 }

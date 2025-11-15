@@ -50,7 +50,7 @@ public class ConsoleController(IWorldService worldService, IRobotService service
         try
         {
             var coord = readLine.Split(" ").Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray();
-            if (coord.Length > 2)
+            if (coord.Length is > 2 or < 2)
             {
                 console.WriteLine("Unexpected Input, please insert Mars bound coordinates i.e. 1 5");
             }
@@ -88,7 +88,7 @@ public class ConsoleController(IWorldService worldService, IRobotService service
         if (_currentRobot == null)
         {
             var input = readLine.Split(" ");
-            if (input.Length > 3)
+            if (input.Length is > 3 or < 3)
             {
                 console.WriteLine("Unexpected Input, please insert Mars bound coordinates with direction i.e. 1 5 E");
             }

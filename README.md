@@ -45,12 +45,27 @@ The project follows a **layered architecture** with clean separation of concerns
 - Grid bounds: 0 < x ≤ maxX, 0 < y ≤ maxY
 - Command sequences: maximum 100 characters
 - Grid size: up to 50×50
+### Testing Framework Selection
+**xUnit**
+- Industry standard for .NET
+- Better design than NUnit for async/await
+- Excellent Rider integration
 
+**NSubstitute**
+- Cleaner API than Moq (and no issues with licencing)
+- Better for complex mocking scenarios
+- More intuitive assertion syntax
+
+**AwesomeAssertions**
+- Fluent assertions improve readability
+- Test failures are more descriptive
+- Better for cross-team understanding#
+- OSS fork of FluentAssertion to solve issue with licencing
 ## 🚀 Quick Start
 
 ### Prerequisites
-- .NET 10.0
-- C# 14.0
+- .NET 10.0 (Latest LTS, which is the best choice for long-term project.), Good choice for performance and maintaibility as well.
+- C# 14.0 (Collections expressions and  Reduces boilerplate, improves readability of code.)
 
 ### Installation
 ```bash
